@@ -17,10 +17,7 @@
 package com.example.android.trackmysleepquality.sleeptracker
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.example.android.trackmysleepquality.database.SleepDatabaseDao
 import com.example.android.trackmysleepquality.database.SleepNight
 import com.example.android.trackmysleepquality.formatNights
@@ -35,6 +32,13 @@ class SleepTrackerViewModel(
 
     private var tonight = MutableLiveData<SleepNight?>()
     private val allNights = database.getAllNights()
+    private val _navigateToSleepQuality = MutableLiveData<SleepNight>()
+    val navigateSleepQuality: LiveData<SleepNight>
+        get() = _navigateToSleepQuality
+
+    private val _showSnackBar = MutableLiveData<Boolean>()
+    val showSnackBar : LiveData<Boolean>
+        get() = _showSnackBar
 
     val nightString = Transformations.map(allNights) {
         formatNights(it, application.resources)
@@ -42,6 +46,26 @@ class SleepTrackerViewModel(
 
     init {
         initializeTonight()
+    }
+
+    fun doneShowingSnackBar(){
+        _showSnackBar.value = false
+    }
+
+    val startButtonVisible = Transformations.map(tonight){
+        it == null
+    }
+
+    val stopButtonVisible = Transformations.map(tonight){
+        it!=null
+    }
+
+    val clearButtonVisible = Transformations.map(allNights){
+        it?.isNotEmpty()
+    }
+
+    fun doneNavigation() {
+        _navigateToSleepQuality.value = null
     }
 
     private fun initializeTonight() {
@@ -63,6 +87,7 @@ class SleepTrackerViewModel(
         viewModelScope.launch {
             val newNight = SleepNight()
             insert(newNight)
+            tonight.value = getTonightFromDatabase()
         }
     }
 
@@ -75,21 +100,24 @@ class SleepTrackerViewModel(
             var oldNight = tonight.value ?: return@launch
             oldNight.endTimeMilli = System.currentTimeMillis()
             update(oldNight)
+            _navigateToSleepQuality.value = oldNight
         }
+
     }
 
     private suspend fun update(sleepNight: SleepNight) {
         database.update(sleepNight)
     }
 
-    fun onClear(){
+    fun onClear() {
         viewModelScope.launch {
             clearAll()
             tonight.value = null
+            _showSnackBar.value = true
         }
     }
 
-    private suspend fun clearAll(){
+    private suspend fun clearAll() {
         database.clear()
     }
 
