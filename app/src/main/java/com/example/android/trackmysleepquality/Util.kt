@@ -21,12 +21,12 @@ import android.content.res.Resources
 import android.os.Build
 import android.text.Html
 import android.text.Spanned
-import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.text.HtmlCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.android.trackmysleepquality.database.SleepNight
+import com.example.android.trackmysleepquality.databinding.ListItemSleepNightBinding
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -131,8 +131,4 @@ fun convertDurationToFormatted(startTimeMilli: Long, endTimeMilli: Long, res: Re
     }
 }
 
-class TextItemViewHolder(view : View) : RecyclerView.ViewHolder(view){
-    val qualityImage = view.findViewById<ImageView>(R.id.quality_image)
-    val quality = view.findViewById<TextView>(R.id.quality_string)
-    val sleepLength = view.findViewById<TextView>(R.id.sleep_length)
-}
+

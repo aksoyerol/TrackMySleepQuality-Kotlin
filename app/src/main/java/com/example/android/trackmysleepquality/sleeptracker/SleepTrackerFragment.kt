@@ -59,8 +59,9 @@ class SleepTrackerFragment : Fragment() {
         val viewModelFactory = SleepTrackerViewModelFactory(dataSource, application)
         val sleepTrackerViewModel = ViewModelProvider(this, viewModelFactory).get(SleepTrackerViewModel::class.java)
 
-        val adapter = SleepNightAdapter()
-        binding.sleepList.adapter = adapter
+        //val adapter = SleepNightAdapter()
+        val newAdapter = SleepNightNewAdapter()
+        binding.sleepList.adapter = newAdapter
 
 
         binding.sleepTrackerViewModel = sleepTrackerViewModel
@@ -96,10 +97,14 @@ class SleepTrackerFragment : Fragment() {
 
         })
 
+//        sleepTrackerViewModel.allNights.observe(viewLifecycleOwner, Observer {
+//            it?.let {
+//                adapter.data = it
+//            }
+//        })
+
         sleepTrackerViewModel.allNights.observe(viewLifecycleOwner, Observer {
-            it?.let {
-                adapter.data = it
-            }
+            newAdapter.submitList(it)
         })
 
 
