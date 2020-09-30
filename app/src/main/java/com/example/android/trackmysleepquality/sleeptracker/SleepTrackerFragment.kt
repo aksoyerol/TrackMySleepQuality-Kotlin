@@ -29,6 +29,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.android.trackmysleepquality.R
 import com.example.android.trackmysleepquality.database.SleepDatabase
@@ -58,24 +59,23 @@ class SleepTrackerFragment : Fragment() {
         val dataSource = SleepDatabase.getInstance(application).sleepDatabaseDao
         val viewModelFactory = SleepTrackerViewModelFactory(dataSource, application)
         val sleepTrackerViewModel = ViewModelProvider(this, viewModelFactory).get(SleepTrackerViewModel::class.java)
-
+        binding.sleepTrackerViewModel = sleepTrackerViewModel
+        binding.lifecycleOwner = this.viewLifecycleOwner
         //val adapter = SleepNightAdapter()
-        val newAdapter = SleepNightNewAdapter()
+        val newAdapter = SleepNightNewAdapter(SleepNightListener {nightId->
+            sleepTrackerViewModel.onSleepNightClicked(nightId)
+            Toast.makeText(context, "$nightId is tapped", Toast.LENGTH_LONG).show()
+            //sleepTrackerViewModel.onSleepNightClicked(nightId)
+
+        })
+
+
         binding.sleepList.adapter = newAdapter
 
 
-        binding.sleepTrackerViewModel = sleepTrackerViewModel
 
-        binding.lifecycleOwner = this.viewLifecycleOwner
 
-        sleepTrackerViewModel.navigateSleepQuality.observe(viewLifecycleOwner, Observer {
-            it?.let {
-                val action =
-                        SleepTrackerFragmentDirections.actionSleepTrackerFragmentToSleepQualityFragment(it.nightId)
-                this.findNavController().navigate(action)
-                sleepTrackerViewModel.doneNavigation()
-            }
-        })
+
 
         //val alertDialog = AlertDialog.Builder(activity)
         //                alertDialog.setMessage("Are you want delete the all items ?")
@@ -102,11 +102,30 @@ class SleepTrackerFragment : Fragment() {
 //                adapter.data = it
 //            }
 //        })
-
         sleepTrackerViewModel.allNights.observe(viewLifecycleOwner, Observer {
             newAdapter.submitList(it)
         })
 
+
+        sleepTrackerViewModel.navigateSleepQuality.observe(viewLifecycleOwner, Observer {
+            it?.let {
+                val action =
+                        SleepTrackerFragmentDirections.actionSleepTrackerFragmentToSleepQualityFragment(it.nightId)
+                this.findNavController().navigate(action)
+                sleepTrackerViewModel.doneNavigation()
+            }
+        })
+
+        sleepTrackerViewModel.navigateToSleepDetail.observe(viewLifecycleOwner,Observer{night->
+            night?.let {
+                this.findNavController().navigate(SleepTrackerFragmentDirections.actionSleepTrackerFragmentToSleepDetailFragment2(night))
+                sleepTrackerViewModel.onSleepDetailNavigated()
+            }
+        })
+
+
+        val manager = GridLayoutManager(activity, 3, GridLayoutManager.VERTICAL, false)
+        binding.sleepList.layoutManager = manager
 
         return binding.root
     }

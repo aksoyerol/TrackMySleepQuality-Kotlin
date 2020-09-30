@@ -40,10 +40,11 @@ interface SleepDatabaseDao {
     suspend fun getTonight(): SleepNight?
 
     @Query("SELECT * FROM daily_sleepNight_table WHERE nightId=:nightId")
-    suspend fun getById(nightId: Long): SleepNight?
+    suspend fun getById(nightId: Long): SleepNight
 
     @Query("SELECT * FROM daily_sleepNight_table ORDER BY nightId DESC")
     fun getAllNights(): LiveData<List<SleepNight>>
 
-
+    @Query("SELECT * FROM daily_sleepNight_table WHERE nightId = :key")
+    fun getNightWithId(key: Long): LiveData<SleepNight>
 }
